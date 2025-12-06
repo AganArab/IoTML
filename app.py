@@ -23,9 +23,9 @@ except Exception:
 # ---------------------------
 MQTT_BROKER = "broker.hivemq.com"
 MQTT_PORT = 1883
-TOPIC_SENSOR = "iot/class/session5/sensor"
-TOPIC_OUTPUT = "iot/class/session5/output"
-MODEL_PATH = "iot_temp_model.pkl"   # put the .pkl in same repo
+TOPIC_SENSOR = "sic7/sensor"
+TOPIC_OUTPUT = "sic7/control"
+MODEL_PATH = "model_random_forest.pkl"   # put the .pkl in same repo
 
 # timezone GMT+7 helper
 TZ = timezone(timedelta(hours=7))
@@ -81,7 +81,7 @@ if st.session_state.ml_model is None:
 if st.session_state.ml_model:
     st.success(f"Model loaded: {MODEL_PATH}")
 else:
-    st.info("No ML model loaded. Upload iot_temp_model.pkl in repo to enable predictions.")
+    st.info("No ML model loaded. Upload model_random_forest.pkl in repo to enable predictions.")
 
 # ---------------------------
 # MQTT callbacks (use GLOBAL_MQ, NOT st.session_state inside callbacks)
