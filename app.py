@@ -54,6 +54,18 @@ st.markdown("""
     /* Main styling */
     .main {
         background: linear-gradient(135deg, #0a0e14 0%, #1a1d29 100%);
+        padding-top: 0 !important;
+    }
+    
+    /* Remove top padding */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 0rem !important;
+    }
+    
+    /* Remove emotion cache padding */
+    div[data-testid="stVerticalBlock"] > div:has(div.stHeadingContainer) {
+        padding-top: 0 !important;
     }
     
     /* Metrics */
@@ -89,6 +101,7 @@ st.markdown("""
     h1, h2, h3 {
         color: #00d4ff !important;
         text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        margin-top: 0 !important;
     }
     
     /* Hide default streamlit elements */
@@ -183,6 +196,9 @@ def predict_and_publish(client, temp, hum):
         elif prediction == "Dingin":
             GLOBAL_STATS["dingin"] += 1
         
+        # Debug: print updated stats
+        print(f"📊 GLOBAL_STATS updated: {GLOBAL_STATS}")
+        
         # Publish status to ESP32
         status_msg = f"status:{prediction}"
         client.publish(TOPIC_CONTROL, status_msg)
@@ -224,7 +240,13 @@ def on_message(client, userdata, msg):
             "pred": prediction
         }
         
-        GLOBAL_MQ.put({"_type": "sensor", "data": row, "ts": time.time()})
+        # Send updated stats through queue
+        GLOBAL_MQ.put({
+            "_type": "sensor", 
+            "data": row, 
+            "stats": GLOBAL_STATS.copy(),
+            "ts": time.time()
+        })
         
     except Exception as e:
         print(f"❌ Message processing error: {e}")
@@ -282,9 +304,6 @@ def process_queue():
     q = st.session_state.msg_queue
     updated = False
     
-    # ALWAYS sync global stats to session state (even if queue is empty)
-    st.session_state.ml_stats = GLOBAL_STATS.copy()
-    
     while not q.empty():
         item = q.get()
         ttype = item.get("_type")
@@ -296,6 +315,11 @@ def process_queue():
             row = item.get("data", {})
             st.session_state.last = row
             st.session_state.logs.append(row)
+            
+            # Update stats from queue message
+            if "stats" in item:
+                st.session_state.ml_stats = item["stats"]
+                updated = True
             
             # Keep logs bounded
             if len(st.session_state.logs) > 1000:
@@ -397,9 +421,10 @@ with left_col:
     
     # ML Statistics
     st.subheader("🤖 ML Statistics")
-    # Force sync latest stats from global
-    st.session_state.ml_stats = GLOBAL_STATS.copy()
     stats = st.session_state.ml_stats
+    
+    # Debug info
+    st.caption(f"🔍 Debug: Stats = {stats}")
     
     s1, s2, s3, s4 = st.columns(4)
     with s1:
@@ -467,9 +492,10 @@ with right_col:
             st.info("⏳ Waiting for data to plot...")
     
     with tab2:
-        # Force sync latest stats
-        st.session_state.ml_stats = GLOBAL_STATS.copy()
         stats = st.session_state.ml_stats
+        
+        # Debug info
+        st.caption(f"🔍 Debug: Distribution stats = {stats}")
         
         if stats["total"] > 0:
             fig_pie = go.Figure()
