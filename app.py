@@ -282,7 +282,7 @@ def process_queue():
     q = st.session_state.msg_queue
     updated = False
     
-    # Sync global stats to session state
+    # ALWAYS sync global stats to session state (even if queue is empty)
     st.session_state.ml_stats = GLOBAL_STATS.copy()
     
     while not q.empty():
@@ -397,6 +397,8 @@ with left_col:
     
     # ML Statistics
     st.subheader("🤖 ML Statistics")
+    # Force sync latest stats from global
+    st.session_state.ml_stats = GLOBAL_STATS.copy()
     stats = st.session_state.ml_stats
     
     s1, s2, s3, s4 = st.columns(4)
@@ -465,6 +467,8 @@ with right_col:
             st.info("⏳ Waiting for data to plot...")
     
     with tab2:
+        # Force sync latest stats
+        st.session_state.ml_stats = GLOBAL_STATS.copy()
         stats = st.session_state.ml_stats
         
         if stats["total"] > 0:
