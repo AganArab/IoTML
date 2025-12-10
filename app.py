@@ -41,8 +41,8 @@ GLOBAL_MQ = queue.Queue()
 # Streamlit page setup
 # ---------------------------
 
-st.set_page_config(page_title="IoT ML Realtime Dashboard — Stable", layout="wide")
-st.title("🔥 IoT ML Realtime Dashboard — Stable")
+st.set_page_config(page_title="Hareudang Project", layout="wide")
+st.title("🔥 Foursome - SMKN 1 Karawang")
 
 # ---------------------------
 # session_state init (must be done before starting worker)
