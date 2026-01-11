@@ -9,6 +9,10 @@ import threading
 from datetime import datetime
 import plotly.graph_objs as go
 import paho.mqtt.client as mqtt
+import pytz
+
+# Timezone GMT+7
+GMT7_TZ = pytz.timezone('Asia/Jakarta')
 
 # Optional auto-refresh
 try:
@@ -234,7 +238,7 @@ def on_message(client, userdata, msg):
         print(f"🤖 Prediction result: {prediction}")
         
         row = {
-            "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "ts": datetime.now(GMT7_TZ).strftime("%Y-%m-%d %H:%M:%S"),
             "temp": temp,
             "hum": hum,
             "pred": prediction
@@ -363,7 +367,7 @@ with col_status[1]:
     st.info(f"📡 Broker: {MQTT_BROKER}:{MQTT_PORT} | Topic: {TOPIC_SENSOR}")
 
 with col_status[2]:
-    st.info(f"🕐 {datetime.now().strftime('%H:%M:%S')}")
+    st.info(f"🕐 {datetime.now(GMT7_TZ).strftime('%H:%M:%S')} GMT+7")
 
 with col_status[3]:
     # Manual refresh button
@@ -549,7 +553,7 @@ with right_col:
         st.download_button(
             "📥 Download Log CSV",
             data=csv,
-            file_name=f"iot_logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            file_name=f"iot_logs_{datetime.now(GMT7_TZ).strftime('%Y%m%d_%H%M%S')}.csv",
             mime="text/csv",
             use_container_width=True
         )
